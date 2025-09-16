@@ -1,0 +1,269 @@
+1. Project Overview 🏡
+Dream Team is a Progressive Web App (PWA) designed for couples to streamline daily planning. It combines four key modules into a single, cohesive interface: a real-time shopping list, a meal planner, an expense tracker, and a shared calendar.
+
+Goal: To create a centralized hub for household management that is fast, easy to use, and accessible on any device (iOS and Android).
+
+Tech Stack:
+
+Frontend: Vite, React, Tailwind CSS
+
+Backend: Firebase (Firestore, Authentication)
+
+Core Principles:
+
+Modularity: Each feature (Meals, Shopping, etc.) will be a self-contained module.
+
+Single Responsibility: Each file will have one clear purpose.
+
+DRY (Don't Repeat Yourself): Reusable components and utility functions will be prioritized.
+
+2. Core Features ✨
+Meal Planner
+Users can create and save meal recipes, including a list of ingredients. A weekly view will allow you to drag and drop these meals onto specific days.
+
+Key Functionality:
+
+Create, edit, and delete meals/recipes.
+
+Each meal will have a name, instructions, and an ingredient list (e.g., { name: 'Milk', quantity: '1 cup' }).
+
+When a meal is added to the weekly plan, a button will appear to "Add ingredients to shopping list," which will intelligently suggest adding any missing items to a selected list.
+
+Shared Shopping List 🛒
+This module features real-time, collaborative shopping lists. Changes made by one user will instantly appear for the other.
+
+Key Functionality:
+
+Create multiple named lists (e.g., "Groceries," "Hardware Store").
+
+Add items to any list.
+
+Check off items in real-time. A checked item could be styled with a strikethrough.
+
+Delete items or clear all checked items from a list.
+
+Uses Firestore's real-time listener (onSnapshot) to keep the UI perfectly in sync.
+
+Expense Tracker 💸
+A simple ledger to track shared recurring and one-time expenses.
+
+Key Functionality:
+
+Add an expense with a name, amount, due date, and a toggle for whether it's a recurring monthly bill.
+
+Mark expenses as "Paid."
+
+The view will clearly separate upcoming bills from paid ones for the current month.
+
+Shared Calendar 🗓️
+A lightweight calendar for planning shared events like date nights or appointments.
+
+Key Functionality:
+
+A simple monthly or weekly calendar view.
+
+Click a date to create an event with a title, time, and description.
+
+Each event will feature "Add to Calendar" links that, when clicked, will open the native calendar app (Google Calendar, Apple Calendar) with the event details pre-filled. This is achieved by generating a standard URL or .ics file link.
+
+3. Technical Architecture & Data Models
+The app will be built around a central household concept in Firestore. When a user signs up, they can create a new household or join an existing one via an invite code. All data (lists, meals, expenses, events) will be tied to a householdId to ensure data is shared only between you and your wife.
+
+Firestore Data Models
+JSON
+
+// Top-level collection
+"households": {
+  "householdId_123": {
+    "members": ["userUid_A", "userUid_B"],
+    "name": "The Smiths' Home"
+  }
+}
+
+// All subsequent data is scoped by householdId for security and querying
+"shoppingLists": {
+  "listId_abc": {
+    "householdId": "householdId_123",
+    "name": "Groceries",
+    "items": [
+      { "text": "Milk", "checked": false },
+      { "text": "Bread", "checked": true }
+    ]
+  }
+}
+
+"meals": {
+  "mealId_def": {
+    "householdId": "householdId_123",
+    "name": "Spaghetti Bolognese",
+    "ingredients": [
+      { "name": "Ground Beef", "quantity": "1 lb" },
+      { "name": "Pasta", "quantity": "1 box" }
+    ]
+  }
+}
+
+"mealPlan": {
+    "planId_ghi": {
+        "householdId": "householdId_123",
+        "date": "2025-09-21", // YYYY-MM-DD
+        "mealId": "mealId_def"
+    }
+}
+
+
+"expenses": {
+  "expenseId_jkl": {
+    "householdId": "householdId_123",
+    "name": "Netflix",
+    "amount": 15.99,
+    "dueDate": "2025-10-01",
+    "isRecurring": true,
+    "isPaid": false
+  }
+}
+
+"events": {
+  "eventId_mno": {
+    "householdId": "householdId_123",
+    "title": "Movie Night",
+    "startDateTime": "2025-09-27T20:00:00",
+    "description": "Watch the new Dune movie!"
+  }
+}
+Frontend File Structure
+Your React codebase will be organized for clarity and maintainability.
+
+src/
+├── components/         # Reusable UI components (Button, Input, Modal)
+│   ├── layout/         # (Navbar, Sidebar)
+│   └── ui/             # (Button, Card, Spinner)
+├── features/           # Each core feature module
+│   ├── shopping/       # Components for the Shopping List
+│   ├── meals/          # Components for the Meal Planner
+│   ├── expenses/       # Components for the Expense Tracker
+│   └── calendar/       # Components for the Calendar
+├── hooks/              # Custom React hooks (e.g., useAuth, useFirestoreQuery)
+├── firebase/           # Firebase configuration and services
+│   └── config.js
+├── pages/              # Top-level page components
+│   ├── HomePage.jsx
+│   ├── LoginPage.jsx
+│   └── ...
+├── App.jsx             # Main app component with routing
+└── main.jsx            # Entry point
+4. Configuration Files
+Here are the essential configuration files to get you started.
+
+Vite Config (vite.config.js)
+This configuration sets up React and the PWA plugin. You'll need to install vite-plugin-pwa.
+
+Bash
+
+npm install vite-plugin-pwa -D
+JavaScript
+
+// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      manifest: {
+        name: 'Dream Team',
+        short_name: 'DreamTeam',
+        description: 'A shared app for managing our home.',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ],
+      },
+    }),
+  ],
+});
+Note: You will need to create the icon files (pwa-192x192.png, etc.) and place them in your public directory.
+
+Firebase Config (src/firebase/config.js)
+Store your Firebase credentials in a .env.local file at the project root to keep them secure.
+
+.env.local
+
+VITE_FIREBASE_API_KEY="your-api-key"
+VITE_FIREBASE_AUTH_DOMAIN="your-auth-domain"
+VITE_FIREBASE_PROJECT_ID="your-project-id"
+VITE_FIREBASE_STORAGE_BUCKET="your-storage-bucket"
+VITE_FIREBASE_MESSAGING_SENDER_ID="your-sender-id"
+VITE_FIREBASE_APP_ID="your-app-id"
+src/firebase/config.js
+
+JavaScript
+
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Export services
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+Firebase Rules (firestore.rules)
+These rules secure your database, ensuring that users can only access data for the household they belong to.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Function to check if a user is a member of a household
+    function isHouseholdMember(householdId) {
+      return get(/databases/$(database)/documents/households/$(householdId)).data.members.has(request.auth.uid);
+    }
+
+    // Users can read their own household document
+    match /households/{householdId} {
+      allow read: if isHouseholdMember(householdId);
+      // Allow create/update for more complex scenarios like invites (can be expanded later)
+      allow write: if request.auth.uid in resource.data.members;
+    }
+
+    // Rules for all other collections that are tied to a household
+    match /{collection}/{docId} {
+      // Allow read/write only if the document's householdId matches a household the user is a member of.
+      allow read, write: if isHouseholdMember(request.resource.data.householdId);
+      // Allow create if the new document belongs to a household the user is a member of.
+      allow create: if isHouseholdMember(request.resource.data.householdId);
+    }
+  }
+}

@@ -1,0 +1,187 @@
+Design Document: Initial App Setup & Authentication
+This document covers the foundational components required to get the Dream Team app running with user authentication and 
+a consistent page structure.
+
+1. Overview
+The goal of this initial phase is to build the application's "shell." This includes:
+
+User sign-up and login functionality using Firebase Authentication.
+
+A persistent top navigation bar for navigating the app.
+
+A main layout structure to ensure a consistent look and feel across all pages.
+
+A routing system to handle page navigation and protect private routes from unauthenticated users.
+
+2. Core Components 🧩
+Login & Signup Pages
+These pages will serve as the entry point for users.
+
+Functionality:
+
+Signup Page (/signup): A form with fields for Email, Password, and Confirm Password. Upon successful registration with Firebase Auth, 
+the user will be automatically logged in and redirected to the main dashboard.
+
+Login Page (/login): A form with fields for Email and Password. Upon success, the user is redirected to the dashboard.
+
+Error Handling: Both forms will display user-friendly error messages from Firebase 
+(e.g., "Invalid email," "Wrong password," "Password should be at least 6 characters").
+
+UI/UX:
+
+Both pages will feature a clean, centered layout. The form will be contained within a styled card element.
+
+Links will be provided to switch between the login and signup pages (e.g., "Already have an account? Log in").
+
+Top Navigation Bar (Navbar.jsx)
+This component will be visible on every page and will adapt based on the user's authentication status.
+
+Functionality:
+
+It will be a state-aware component that knows if a user is logged in.
+
+Logged-out State: Displays the app name/logo on the left and "Login" and "Signup" links on the right.
+
+Logged-in State: Displays the app name/logo, links to the core features (Dashboard, Meals, Shopping, etc.), 
+and a "Logout" button or user profile icon on the right.
+
+Styling (Tailwind CSS):
+
+Locked to the top of the viewport using fixed top-0 left-0 right-0.
+
+Will have a z-index to ensure it stays above other page content.
+
+Styled with a background color and a subtle bottom shadow (shadow-md) to separate it from the page content.
+
+Will be responsive, collapsing navigation links into a hamburger menu on smaller screens.
+
+Main App Layout (Layout.jsx)
+This is a wrapper component that defines the overall structure of the application.
+
+Functionality:
+
+The Layout component will render the Navbar at the top.
+
+It will then render the specific page content passed to it as children.
+
+This follows the DRY principle, so we don't have to add the Navbar to every single page manually.
+
+Styling:
+
+It will create a main content area with padding (pt-16 or similar) to prevent page content from being 
+hidden underneath the fixed Navbar.
+
+It can also define the main content's maximum width and center it on the page for a consistent look.
+
+3. Routing & Page Structure 🗺️
+We will use react-router-dom to handle all client-side routing.
+
+Public Routes: Accessible to everyone.
+
+/login -> Renders LoginPage.jsx
+
+/signup -> Renders SignupPage.jsx
+
+Private Routes: Require the user to be logged in.
+
+/ or /dashboard -> Renders DashboardPage.jsx
+
+/shopping-lists -> Renders the main shopping list page.
+
+/meal-planner -> Renders the meal planner page.
+
+And so on for other features.
+
+To manage this, we will create a ProtectedRoute.jsx component. 
+This component will check the user's authentication status. If the user is logged in, 
+it renders the requested page. If not, it redirects them to the /login page.
+
+4. Authentication Flow & State Management
+Firebase Authentication: We will enable "Email/Password" as sign-in provider in the Firebase console.
+
+React Context for Auth: To manage the user's logged-in state across the entire application, we will create an AuthContext.
+
+An AuthProvider component will wrap the entire app.
+
+It will use Firebase's onAuthStateChanged listener. This is a real-time listener that tells our app 
+whenever the user's login status changes (logs in, logs out).
+
+A custom hook, useAuth(), will be created to allow any component to easily access the current user's 
+data (e.g., const { user } = useAuth();).
+
+5. Component Breakdown & File Structure
+This is how the new files will fit into your existing structure:
+
+src/
+├── components/
+│   ├── layout/
+│   │   ├── Navbar.jsx
+│   │   └── Layout.jsx
+│   └── ui/
+│       └── ...
+├── context/
+│   └── AuthContext.jsx       # Auth provider and useAuth hook
+├── features/
+│   └── ...
+├── hooks/
+│   └── (useAuth hook will be in AuthContext.jsx)
+├── firebase/
+│   └── config.js
+├── pages/
+│   ├── LoginPage.jsx
+│   ├── SignupPage.jsx
+│   └── DashboardPage.jsx
+├── App.jsx                     # Main router setup
+└── main.jsx
+Code Skeleton: App.jsx (with Router)
+JavaScript
+
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Layout from './components/layout/Layout';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import DashboardPage from './pages/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute'; // We will create this
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            {/* Add other protected routes here */}
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
+
+export default App;
+6. Action Plan
+
+Enable Firebase Auth: Go to your Firebase project console -> Authentication -> Sign-in method, and enable "Email/Password"
+
+Build Auth Context: Create src/context/AuthContext.jsx to manage user state.
+
+Create Pages: Build the LoginPage.jsx and SignupPage.jsx components with forms.
+
+Build Layout: Create the Navbar.jsx and Layout.jsx components.
+
+Implement Routing: Set up the routes in App.jsx as shown above.
+
+Create ProtectedRoute: Build the ProtectedRoute.jsx component that checks useAuth() and redirects if the user is not logged in.
