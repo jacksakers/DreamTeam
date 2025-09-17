@@ -76,7 +76,7 @@ const ShoppingListPage = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-5">
-      <div className="mb-8 relative">
+      <div className="mb-5 relative">
         <img src={leaf2} alt="" className="absolute -top-6 -left-6 w-12 h-12 opacity-20" />
         <h1 className="text-3xl font-bold text-[var(--color-wood-dark)] mb-2">Lists</h1>
         <p className="text-[var(--color-earth)]">Create and manage your shared shopping or to-do lists</p>
@@ -89,10 +89,10 @@ const ShoppingListPage = () => {
       )}
       
       {/* Create new list form */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-8 border 
+      <div className="bg-white rounded-lg shadow-md p-4 mb-5 border 
                         border-[var(--color-sage)] relative overflow-hidden">
         <img src={leaf1} alt="" className="absolute -bottom-4 -right-4 w-16 h-16 opacity-10" />
-        <form onSubmit={handleCreateList} className="flex flex-col md:flex-row gap-2 relative z-10">
+        <form onSubmit={handleCreateList} className="flex gap-2 relative z-10">
           <input
             type="text"
             value={newListName}
@@ -109,7 +109,7 @@ const ShoppingListPage = () => {
                 text-white py-2 px-4 rounded-md transition-colors duration-200"
             disabled={!newListName.trim()}
           >
-            Create List
+            +
           </button>
         </form>
       </div>

@@ -28,7 +28,7 @@ const AddItemForm = ({ onAddItem }) => {
         className="flex-grow px-3 py-2 border 
                     rounded-l-md border-[var(--color-sage)] 
                     focus:outline-none focus:ring-2 focus:ring-[var(--color-leaf)] 
-                    focus:border-transparent max-w-38 md:max-w-full"
+                    focus:border-transparent max-w-full"
         aria-label="Add shopping list item"
       />
       <button
