@@ -17,6 +17,11 @@ Single Responsibility: Each file will have one clear purpose.
 
 DRY (Don't Repeat Yourself): Reusable components and utility functions will be prioritized.
 
+THEME: 
+The theme of the app should be green and earthy tones. It should have a nature, relaxed, outdoorsy
+feel to it. Maybe added greenery and leaf svgs. It should also have a natural dark wood feel as well.
+
+
 2. Core Features ✨
 Meal Planner
 Users can create and save meal recipes, including a list of ingredients. A weekly view will allow you to drag and drop these meals onto specific days.

@@ -1,0 +1,183 @@
+Design Document: Step 2 - Shopping List Feature
+This document outlines the architecture and implementation plan for the Shared Shopping List, 
+the first core feature of the Dream Team app. The primary goal is to create a 
+seamless, real-time experience for all household members.
+
+1. Feature Overview 🛒
+The Shopping List module will allow users to create multiple shared lists that 
+sync instantly across devices. When one person checks off an item, it should appear 
+checked for everyone else in the household without needing a page refresh.
+
+Core Functionality:
+
+Create multiple, uniquely named shopping lists (e.g., "Weekly Groceries," "Hardware Store").
+
+Add new items to any list.
+
+Mark items as "completed" by checking them off.
+
+Delete individual items or entire lists.
+
+Technical Approach:
+
+Leverage Cloud Firestore for the database.
+
+Use Firestore's real-time listener (onSnapshot) to automatically push 
+updates to all connected clients.
+
+2. Firestore Data Model
+We will create a new top-level collection called shoppingLists. Each document 
+within this collection represents a single list and is explicitly linked to a
+ householdId for security.
+
+JSON
+
+"shoppingLists": {
+  "listId_abc123": {
+    "householdId": "householdId_xyz789", // Foreign key to the 'households' collection
+    "name": "Weekly Groceries",
+    "createdAt": "2025-09-18T10:00:00Z", // Timestamp for sorting
+    "items": [
+      { "id": "item_1", "text": "Milk", "checked": false },
+      { "id": "item_2", "text": "Bread", "checked": true },
+      { "id": "item_3", "text": "Eggs", "checked": false }
+    ]
+  },
+  "listId_def456": {
+    "householdId": "householdId_xyz789",
+    "name": "Hardware Store",
+    "createdAt": "2025-09-17T15:30:00Z",
+    "items": [
+      { "id": "item_4", "text": "Light bulbs", "checked": false }
+    ]
+  }
+}
+Key Design Choices:
+
+householdId: This is essential for writing security rules. It ensures that
+ only members of a specific household can view or edit their lists.
+
+items as an Array of Objects: Storing items as an array of objects (instead of simple strings) 
+allows us to track the checked state for each item individually. The unique id for 
+each item makes it easier to update or delete a specific one.
+
+3. Component Architecture
+The feature will be broken down into modular, reusable components.
+
+src/
+└── features/
+    └── shopping/
+        ├── ShoppingListPage.jsx    // Main page: fetches and displays all lists.
+        ├── ShoppingList.jsx        // Renders a single list and its items.
+        ├── AddItemForm.jsx         // A form to add a new item to a list.
+        ├── ListItem.jsx            // Renders a single item with a checkbox and delete button.
+        └── shoppingApi.js          // Contains all Firestore interaction logic (CRUD functions).
+ShoppingListPage.jsx:
+
+This is the main container page, accessible from the Navbar.
+
+It will fetch all shopping lists that belong to the current user's household.
+
+It will include a form to create new lists.
+
+It will map over the fetched lists and render a ShoppingList component for each one.
+
+ShoppingList.jsx:
+
+Receives a single list object as a prop.
+
+Displays the list's title and a button to delete the entire list.
+
+Renders the AddItemForm component for adding items to this specific list.
+
+Maps over the items array and renders a ListItem component for each item.
+
+shoppingApi.js:
+
+This file will abstract all Firestore logic away from the components, 
+following the "one job per file" principle.
+
+It will export functions like:
+
+getLists(householdId, callback): Uses onSnapshot to listen for real-time updates.
+
+createList(householdId, listName)
+
+deleteList(listId)
+
+addItemToList(listId, itemText)
+
+updateItem(listId, itemId, isChecked)
+
+deleteItem(listId, itemId)
+
+4. Firestore Security Rules (firestore.rules)
+These rules are crucial for securing your data. They ensure that users 
+can only access the shopping lists associated with their household. You will 
+update your existing firestore.rules file with a new match block for the shoppingLists collection.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Function to check if a user is a member of a household (from previous step)
+    function isHouseholdMember(householdId) {
+      // Ensure the user is authenticated before checking
+      return request.auth != null && 
+             get(/databases/$(database)/documents/households/$(householdId)).data.members.has(request.auth.uid);
+    }
+
+    // Rules for households collection (from previous step)
+    match /households/{householdId} {
+      allow read, write: if isHouseholdMember(householdId);
+    }
+
+    // --- NEW: Rules for the shoppingLists collection ---
+    match /shoppingLists/{listId} {
+      // Allow a user to read, update, or delete a list if they are a member of the household the list belongs to.
+      // We check `resource.data.householdId` because it's the data that already exists in Firestore.
+      allow read, update, delete: if isHouseholdMember(resource.data.householdId);
+
+      // Allow a user to create a new list if the data they are about to send (`request.resource.data`)
+      // contains a householdId that they are a member of. This prevents a user from creating a list
+      // for someone else's household.
+      allow create: if isHouseholdMember(request.resource.data.householdId);
+    }
+  }
+}
+5. Action Plan
+Create Folder Structure: Create the src/features/shopping/ directory and the 
+empty component files (ShoppingListPage.jsx, ShoppingList.jsx, etc.).
+
+Build the API File (shoppingApi.js):
+
+Write the Firestore functions for creating, reading, updating, and deleting lists and items.
+
+For reading data in real-time, use the onSnapshot listener from Firestore.
+
+Develop Components (Bottom-up):
+
+Start with ListItem.jsx to render a single item.
+
+Build AddItemForm.jsx.
+
+Create the ShoppingList.jsx component to assemble the items and the form.
+
+Finally, build ShoppingListPage.jsx to fetch the data using your API functions 
+and display all the lists.
+
+Add Routing: Update App.jsx to include a new protected route for the shopping list page:
+
+JavaScript
+
+<Route
+  path="/shopping"
+  element={
+    <ProtectedRoute>
+      <ShoppingListPage />
+    </ProtectedRoute>
+  }
+/>
+Update Navigation: Add a link to /shopping in your Navbar.jsx so that logged-in users 
+can access the feature.

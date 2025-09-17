@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* Custom Theme Variables - Natural Earthy Palette */
+:root {
+  /* Primary Colors */
+  --color-leaf-dark: #2d6a4f;
+  --color-leaf: #40916c;
+  --color-leaf-light: #52b788;
+  --color-moss: #74c69d;
+  --color-sage: #95d5b2;
+  
+  /* Wood Colors */
+  --color-wood-dark: #5c4033;
+  --color-wood: #7d5a50;
+  --color-wood-light: #b08968;
+  
+  /* Earth Colors */
+  --color-earth-dark: #543d2e;
+  --color-earth: #7f5539;
+  --color-earth-light: #a98467;
+  
+  /* Neutral Colors */
+  --color-cream: #f5f1e3;
+  --color-sand: #e6ccb2;
+}
 
 #root {
   max-width: 1280px;
