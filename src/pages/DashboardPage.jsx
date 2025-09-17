@@ -40,14 +40,13 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="py-8">
+    <div className="py-5">
       <div className="max-w-4xl mx-auto">
         <div className="relative">
-          <img src={leaf1} alt="" className="absolute -top-10 -left-10 w-16 h-16 opacity-20" />
           <h1 className="text-3xl font-bold text-[var(--color-wood-dark)] mb-2">
-            Welcome to {household?.name || 'Dream Team'}
+            {household?.name || 'Dream Team'}
           </h1>
-          <p className="text-[var(--color-earth)] mb-6">Your central hub for household management.</p>
+          <p className="text-[var(--color-earth)] mb-6">A central hub for household management.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
