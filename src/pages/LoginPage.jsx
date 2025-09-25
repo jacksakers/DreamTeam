@@ -19,7 +19,15 @@ const LoginPage = () => {
       setError('');
       setLoading(true);
       await login(email, password);
-      navigate('/');
+      
+      // Check if there's a redirect URL stored (from household invitation)
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       // Handle different Firebase auth errors
       switch (err.code) {

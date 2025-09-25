@@ -1,35 +1,20 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { useState } from 'react';
+import { useHousehold } from '../context/HouseholdContext';
 import leaf1 from '../assets/leaf1.svg';
 import leaf2 from '../assets/leaf2.svg';
+import ManageHouseholdModal from '../features/household/ManageHouseholdModal';
 
 const DashboardPage = () => {
-  const { currentUser } = useAuth();
-  const [household, setHousehold] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { activeHousehold, loading } = useHousehold();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchHouseholdData = async () => {
-      if (!currentUser) return;
-      
-      try {
-        const householdRef = doc(db, 'households', currentUser.uid);
-        const householdSnap = await getDoc(householdRef);
-        
-        if (householdSnap.exists()) {
-          setHousehold(householdSnap.data());
-        }
-      } catch (error) {
-        console.error('Error fetching household data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchHouseholdData();
-  }, [currentUser]);
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
   if (loading) {
     return (
@@ -42,12 +27,22 @@ const DashboardPage = () => {
   return (
     <div className="py-5">
       <div className="max-w-4xl mx-auto">
-        <div className="relative">
-          <h1 className="text-3xl font-bold text-[var(--color-wood-dark)] mb-2">
-            {household?.name || 'Dream Team'}
-          </h1>
-          <p className="text-[var(--color-earth)] mb-6">A central hub for household management.</p>
+        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-[var(--color-wood-dark)] mb-2">
+              {activeHousehold?.name || 'Dream Team'}
+            </h1>
+            <p className="text-[var(--color-earth)] mb-6">A central hub for household management.</p>
+          </div>
+          <button 
+            onClick={openModal}
+            className="bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] text-white py-2 px-4 rounded-md transition-colors mb-4 md:mb-0"
+          >
+            Manage Household
+          </button>
         </div>
+        
+        <ManageHouseholdModal isOpen={isModalOpen} onClose={closeModal} />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <DashboardCard 

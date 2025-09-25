@@ -36,7 +36,24 @@ const SignupPage = () => {
         createdAt: new Date().toISOString(),
       });
       
-      navigate('/');
+      // Create user document
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        email: user.email,
+        displayName: user.displayName || '',
+        householdIds: [user.uid],
+        activeHouseholdId: user.uid,
+        createdAt: new Date().toISOString(),
+      });
+      
+      // Check if there's a redirect URL stored (from household invitation)
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       // Handle different Firebase auth errors
       switch (err.code) {
