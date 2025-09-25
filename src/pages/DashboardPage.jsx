@@ -64,7 +64,7 @@ const DashboardPage = () => {
             description="Plan your weekly meals and manage recipes."
             linkTo="/meal-planner"
             icon="🍽️"
-            color="leaf-light"
+            color="leaf"
             decoration={leaf2}
           />
           
@@ -73,7 +73,7 @@ const DashboardPage = () => {
             description="Track and manage shared expenses."
             linkTo="/expenses"
             icon="💸"
-            color="wood"
+            color="wood-light"
             decoration={leaf1}
           />
           
@@ -94,30 +94,29 @@ const DashboardPage = () => {
 // Helper component for dashboard cards
 const DashboardCard = ({ title, description, linkTo, icon, color, decoration }) => {
   return (
-    <div className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border-t-4 border-[var(--color-${color})] relative`}>
+    <div className={`bg-white rounded-lg shadow-md overflow-hidden 
+                    hover:shadow-lg transition-all duration-300 border-t-4 
+                    border-green-800 relative`}>
       {/* Decorative leaf */}
       <img src={decoration} alt="" className="absolute top-2 right-2 w-8 h-8 opacity-10" />
       
-      <div className="p-6">
+      <div className="p-6 h-full flex flex-col justify-between">
         <div className="flex items-center mb-3">
           <span className="text-2xl mr-3">{icon}</span>
           <h2 className="text-xl font-semibold text-[var(--color-earth-dark)]">{title}</h2>
         </div>
         <p className="text-[var(--color-earth)] mb-4">{description}</p>
-        <a 
-          href={linkTo} 
-          className={`inline-block bg-[var(--color-${color})] hover:bg-[var(--color-${color}-dark)] text-white py-2 px-4 rounded-md transition-colors duration-300`}
-        >
-          Go to {title}
-        </a>
+        <div className="flex justify-center">
+          <a 
+            href={linkTo} 
+            className={`inline-block bg-[var(--color-${color})] 
+                        hover:bg-[var(--color-${color}-dark)] text-white py-2 px-4 
+                        rounded-md transition-colors duration-300`}
+          >
+            Go to {title}
+          </a>
+        </div>
       </div>
-      
-      {/* Wood grain texture at bottom */}
-      <div className="h-2 w-full" style={{
-        backgroundImage: 'repeating-linear-gradient(90deg, var(--color-wood-dark) 0px, var(--color-wood) 5px, var(--color-wood-light) 10px, var(--color-wood) 15px)',
-        backgroundSize: '20px 100%',
-        opacity: 0.2
-      }}></div>
     </div>
   );
 };
