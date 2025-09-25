@@ -10,6 +10,10 @@ service cloud.firestore {
       allow read, write, create: if request.auth != null;
     }
     
+    match /events/{eventID} {
+      allow read, write, create: if request.auth != null;
+    }
+    
     // Default deny all other documents
     match /{document=**} {
       allow read, write: if false;

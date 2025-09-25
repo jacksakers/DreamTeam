@@ -1,0 +1,185 @@
+Design Document: Step 3 - Shared Calendar Feature
+This document details the design and implementation of the Shared Calendar, 
+allowing you and your wife to keep track of important dates and events. The 
+design prioritizes simplicity and seamless integration with native phone calendars.
+
+1. Feature Overview 🗓️
+The Shared Calendar is a simple, visual way to manage joint schedules. Users 
+can see events for the month at a glance, add new plans, and view details for 
+existing ones. The standout feature will be the ability to add any event from the 
+app directly to a personal Google or Apple Calendar with a single click.
+
+Core Functionality:
+
+View events in a simple monthly layout.
+
+Create new events with a title, date, start/end time, and description.
+
+View the details of an existing event.
+
+Delete events.
+
+Key Technical Feature:
+
+Generate dynamic links for each event to add it to Google Calendar or Apple Calendar.
+
+2. The "Add to Calendar" Feature 🔗
+This is the most critical user-facing feature of this module. We will 
+implement it client-side without needing a server.
+
+Method: We will create a utility function that generates two types of 
+links for each event:
+
+A Google Calendar URL: Google Calendar supports creating events via a specially 
+crafted URL. We will generate a link that pre-fills the event details on the 
+Google Calendar web interface.
+
+An .ics File Data URI: The universal calendar file format is .ics. We can generate 
+the text for an .ics file in memory and embed it directly into a link's href 
+attribute as a Base64-encoded Data URI. Clicking this link prompts a download 
+or an import into any standard calendar app, including Apple Calendar on iOS and macOS.
+
+Example Utility Function (/src/utils/calendarUtils.js):
+
+JavaScript
+
+// A simplified example of the function's logic
+export function generateCalendarLinks(event) {
+  const { title, startDateTime, endDateTime, description } = event;
+
+  // Format dates for Google (YYYYMMDDTHHMMSSZ)
+  const googleFormat = (date) => new Date(date).toISOString().replace(/[-:]|\.\d{3}/g, '');
+  const googleDates = `${googleFormat(startDateTime)}/${googleFormat(endDateTime)}`;
+
+  // Google Calendar Link
+  const googleLink = new URL('https://www.google.com/calendar/render');
+  googleLink.searchParams.append('action', 'TEMPLATE');
+  googleLink.searchParams.append('text', title);
+  googleLink.searchParams.append('dates', googleDates);
+  googleLink.searchParams.append('details', description);
+
+  // .ics File Content (for Apple/Outlook etc.)
+  const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:Date.now()@dreamteam.appSUMMARY:{title}
+DTSTAMP:googleFormat(newDate())DTSTART:{googleFormat(startDateTime)}
+DTEND:googleFormat(endDateTime)DESCRIPTION:{description}
+END:VEVENT
+END:VCALENDAR`;
+
+  // .ics Data URI Link
+  const icsLink = `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`;
+
+  return { googleLink: googleLink.href, icsLink };
+}
+```
+3. Firestore Data Model
+We will create a new top-level collection named events. Each document 
+will represent a single calendar event and will be linked to the householdId.
+
+JSON
+
+"events": {
+  "eventId_123": {
+    "householdId": "householdId_xyz789",
+    "title": "Date Night",
+    "description": "Dinner reservation at The Capital Grille.",
+    "startDateTime": "2025-10-10T19:00:00.000Z", // Store as Firestore Timestamp or ISO 8601 String
+    "endDateTime": "2025-10-10T21:00:00.000Z",
+    "createdAt": "2025-09-25T15:45:00.000Z"
+  }
+}
+Key Design Choice: Storing dates as Firestore Timestamps or full ISO 8601 
+strings is crucial. This standard format includes timezone information (UTC, 
+denoted by 'Z'), which prevents confusion and makes date manipulation predictable.
+
+4. Component Architecture
+The calendar feature will live in its own modular directory.
+
+src/
+└── features/
+    └── calendar/
+        ├── CalendarPage.jsx    // Main page, fetches data, displays the calendar.
+        ├── EventModal.jsx      // A modal form for creating or editing an event.
+        └── calendarApi.js      // All Firestore functions for the calendar.
+└── utils/
+    └── calendarUtils.js    // The utility function to generate calendar links.
+CalendarPage.jsx:
+
+Will use a lightweight, simple calendar library like react-calendar.
+
+It will fetch all events for the user's household using a real-time listener 
+from calendarApi.js.
+
+It will render markers on dates that have events.
+
+Clicking a date will open the EventModal to create a new event.
+
+Clicking an existing event marker will show its details, along with the 
+"Add to Calendar" and "Delete" buttons.
+
+EventModal.jsx:
+
+A form with inputs for Title, Description, Date, Start Time, and End Time.
+
+Handles the logic for creating or updating an event in Firestore via the API functions.
+
+calendarApi.js:
+
+Will export functions like streamEvents(householdId, callback), addEvent(eventData), 
+and deleteEvent(eventId).
+
+5. Firestore Security Rules (firestore.rules)
+We'll add rules for the new events collection, maintaining the same security 
+pattern as before to ensure household data privacy.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ... (existing isHouseholdMember function and rules for households, shoppingLists)
+
+    // --- NEW: Rules for the events collection ---
+    match /events/{eventId} {
+      // Allow users to read, create, update, or delete an event
+      // if they are a member of the household associated with that event.
+      allow read, write: if isHouseholdMember(
+        // Check existing data on read/update/delete
+        resource.data.householdId
+      ) || isHouseholdMember(
+        // Check incoming data on create
+        request.resource.data.householdId
+      );
+    }
+  }
+}
+6. Action Plan ⚙️
+Install Calendar Library: Choose and install a simple calendar component library. 
+react-calendar is a great choice.
+
+Bash
+
+npm install react-calendar
+Create File Structure: Set up the features/calendar and utils directories and create the necessary files.
+
+Build the API (calendarApi.js): Implement the Firestore functions to create, read (with onSnapshot), and delete events.
+
+Develop Calendar UI:
+
+Implement CalendarPage.jsx to display the calendar.
+
+Fetch and map event data to show markers on the calendar.
+
+Build the EventModal.jsx with a form for event creation.
+
+Implement "Add to Calendar":
+
+Create the calendarUtils.js file and add the generateCalendarLinks function.
+
+In your event details view, call this function and render two links (<a> tags): one for Google and one for Apple/Other.
+
+Add Routing & Navigation: Add a /calendar route in App.jsx and a link in the Navbar.jsx.
+
+Deploy Firestore Rules: Deploy your updated firestore.rules file using the Firebase CLI to secure your new collection.
