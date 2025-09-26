@@ -1,20 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useHousehold } from '../../context/HouseholdContext';
 import { getLists, createList } from './shoppingApi';
 import ShoppingList from './ShoppingList';
 import leaf1 from '../../assets/leaf1.svg';
 import leaf2 from '../../assets/leaf2.svg';
 
 const ShoppingListPage = () => {
-  const { currentUser } = useAuth();
+  const { activeHousehold, activeHouseholdId } = useHousehold();
   const [lists, setLists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newListName, setNewListName] = useState('');
   const [error, setError] = useState(null);
-
-  // Get the user's household ID (for now assuming it's stored in user.uid)
-  // In a real implementation, you would get this from a user profile or context
-  const householdId = currentUser?.uid || '';
 
   useEffect(() => {
     let unsubscribe = () => {};
@@ -22,7 +18,7 @@ const ShoppingListPage = () => {
     const fetchLists = async () => {
       setIsLoading(true);
       try {
-        unsubscribe = getLists(householdId, (fetchedLists) => {
+        unsubscribe = getLists(activeHouseholdId, (fetchedLists) => {
           // Sort lists by creation time (newest first)
           const sortedLists = [...fetchedLists].sort((a, b) => {
             // Handle Firestore timestamps or fallback to string comparison
@@ -42,22 +38,23 @@ const ShoppingListPage = () => {
       }
     };
 
-    if (householdId) {
+    if (activeHouseholdId) {
       fetchLists();
     } else {
       setIsLoading(false);
+      setError('No active household selected. Please select a household from the dashboard.');
     }
 
     return () => unsubscribe();
-  }, [householdId]);
+  }, [activeHouseholdId]);
 
   const handleCreateList = async (e) => {
     e.preventDefault();
     
-    if (!newListName.trim()) return;
+    if (!newListName.trim() || !activeHouseholdId) return;
     
     try {
-      await createList(householdId, newListName.trim());
+      await createList(activeHouseholdId, newListName.trim());
       setNewListName('');
     } catch (err) {
       console.error('Error creating list:', err);
@@ -79,7 +76,11 @@ const ShoppingListPage = () => {
       <div className="mb-5 relative">
         <img src={leaf2} alt="" className="absolute -top-6 -left-6 w-12 h-12 opacity-20" />
         <h1 className="text-3xl font-bold text-[var(--color-wood-dark)] mb-2">Lists</h1>
-        <p className="text-[var(--color-earth)]">Create and manage your shared shopping or to-do lists</p>
+        <p className="text-[var(--color-earth)]">
+          {activeHousehold 
+            ? `Create and manage shared lists for ${activeHousehold.name}`
+            : 'Create and manage your shared shopping or to-do lists'}
+        </p>
       </div>
       
       {error && (
@@ -92,7 +93,7 @@ const ShoppingListPage = () => {
       <div className="bg-white rounded-lg shadow-md p-4 mb-5 border 
                         border-[var(--color-sage)] relative overflow-hidden">
         <img src={leaf1} alt="" className="absolute -bottom-4 -right-4 w-16 h-16 opacity-10" />
-        <form onSubmit={handleCreateList} className="flex gap-2 relative z-10">
+        <form onSubmit={handleCreateList} className="flex gap-2 z-10 flex-col sm:flex-row">
           <input
             type="text"
             value={newListName}
@@ -102,16 +103,35 @@ const ShoppingListPage = () => {
                 focus:outline-none focus:ring-2 focus:ring-[var(--color-leaf)] 
                 focus:border-transparent"
             aria-label="New shopping list name"
+            disabled={!activeHouseholdId}
           />
+          <div className='flex justify-end'>
           <button
             type="submit"
             className="bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] 
-                text-white py-2 px-4 rounded-md transition-colors duration-200"
-            disabled={!newListName.trim()}
+                text-white py-2 px-4 rounded-md transition-colors duration-200 max-w-fit"
+            disabled={!newListName.trim() || !activeHouseholdId}
           >
-            +
+            <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5 mr-1" 
+          viewBox="0 0 20 20" 
+          fill="currentColor"
+        >
+          <path 
+            fillRule="evenodd" 
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" 
+            clipRule="evenodd" 
+          />
+        </svg>
           </button>
+          </div>
         </form>
+        {!activeHouseholdId && (
+          <p className="text-sm text-red-500 mt-2">
+            Please select an active household from the dashboard to create lists.
+          </p>
+        )}
       </div>
       
       {/* List of shopping lists */}
@@ -136,8 +156,14 @@ const ShoppingListPage = () => {
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
             />
           </svg>
-          <h2 className="mt-2 text-lg font-medium text-[var(--color-wood-dark)]">No shopping lists yet</h2>
-          <p className="mt-1 text-[var(--color-earth)]">Create your first shopping list to get started</p>
+          <h2 className="mt-2 text-lg font-medium text-[var(--color-wood-dark)]">
+            {activeHouseholdId ? 'No shopping lists yet' : 'No active household selected'}
+          </h2>
+          <p className="mt-1 text-[var(--color-earth)]">
+            {activeHouseholdId 
+              ? 'Create your first shopping list to get started' 
+              : 'Please select an active household from the dashboard'}
+          </p>
         </div>
       )}
     </div>

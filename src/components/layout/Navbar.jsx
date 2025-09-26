@@ -44,12 +44,12 @@ const Navbar = () => {
                   <Link to="/shopping-lists" className="text-white hover:text-[var(--color-cream)] hover:bg-[var(--color-leaf)] px-3 py-2 rounded-md text-sm font-medium transition-colors">
                     Lists
                   </Link>
-                  <Link to="/meal-planner" className="text-white hover:text-[var(--color-cream)] hover:bg-[var(--color-leaf)] px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  {/* <Link to="/meal-planner" className="text-white hover:text-[var(--color-cream)] hover:bg-[var(--color-leaf)] px-3 py-2 rounded-md text-sm font-medium transition-colors">
                     Meal Planner
                   </Link>
                   <Link to="/expenses" className="text-white hover:text-[var(--color-cream)] hover:bg-[var(--color-leaf)] px-3 py-2 rounded-md text-sm font-medium transition-colors">
                     Expenses
-                  </Link>
+                  </Link> */}
                   <Link to="/calendar" className="text-white hover:text-[var(--color-cream)] hover:bg-[var(--color-leaf)] px-3 py-2 rounded-md text-sm font-medium transition-colors">
                     Calendar
                   </Link>
@@ -125,7 +125,7 @@ const Navbar = () => {
               >
                 Shopping Lists
               </Link>
-              <Link
+              {/* <Link
                 to="/meal-planner"
                 className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[var(--color-leaf-dark)] transition-colors"
                 onClick={() => setIsMenuOpen(false)}
@@ -138,7 +138,7 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Expenses
-              </Link>
+              </Link> */}
               <Link
                 to="/calendar"
                 className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[var(--color-leaf-dark)] transition-colors"

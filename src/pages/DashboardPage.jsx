@@ -55,24 +55,6 @@ const DashboardPage = () => {
           />
           
           <DashboardCard 
-            title="Meal Planner" 
-            description="Plan your weekly meals and manage recipes."
-            linkTo="/meal-planner"
-            icon="🍽️"
-            color="leaf"
-            decoration={leaf2}
-          />
-          
-          <DashboardCard 
-            title="Expenses" 
-            description="Track and manage shared expenses."
-            linkTo="/expenses"
-            icon="💸"
-            color="wood-light"
-            decoration={leaf1}
-          />
-          
-          <DashboardCard 
             title="Calendar" 
             description="Schedule and view shared events."
             linkTo="/calendar"
@@ -80,6 +62,26 @@ const DashboardPage = () => {
             color="wood-light"
             decoration={leaf2}
           />
+
+{/*         
+        <DashboardCard 
+          title="Meal Planner" 
+          description="Plan your weekly meals and manage recipes."
+          linkTo="/meal-planner"
+          icon="🍽️"
+          color="leaf"
+          decoration={leaf2}
+        />
+        
+        <DashboardCard 
+          title="Expenses" 
+          description="Track and manage shared expenses."
+          linkTo="/expenses"
+          icon="💸"
+          color="wood-light"
+          decoration={leaf1}
+        /> */}
+          
         </div>
       </div>
     </div>

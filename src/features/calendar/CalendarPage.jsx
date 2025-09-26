@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
-import { useAuth } from '../../context/AuthContext';
+import { useHousehold } from '../../context/HouseholdContext';
 import { streamEvents } from './calendarApi';
 import EventModal from './EventModal';
 import DayEventsModal from './DayEventsModal';
@@ -12,7 +12,7 @@ import leaf2 from '../../assets/leaf2.svg';
 
 // Import react-calendar CSS and override with our own styles
 const CalendarPage = () => {
-  const { currentUser } = useAuth();
+  const { activeHousehold, activeHouseholdId } = useHousehold();
   const [events, setEvents] = useState([]);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
@@ -21,17 +21,13 @@ const CalendarPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get the user's household ID (for now assuming it's stored in user.uid)
-  // In a real implementation, you would get this from a user profile or context
-  const householdId = currentUser?.uid || '';
-
   useEffect(() => {
     let unsubscribe = () => {};
 
     const fetchEvents = async () => {
       setLoading(true);
       try {
-        unsubscribe = streamEvents(householdId, (fetchedEvents) => {
+        unsubscribe = streamEvents(activeHouseholdId, (fetchedEvents) => {
           setEvents(fetchedEvents);
           setLoading(false);
         });
@@ -42,14 +38,15 @@ const CalendarPage = () => {
       }
     };
 
-    if (householdId) {
+    if (activeHouseholdId) {
       fetchEvents();
     } else {
       setLoading(false);
+      setError('No active household selected. Please select a household from the dashboard.');
     }
 
     return () => unsubscribe();
-  }, [householdId]);
+  }, [activeHouseholdId]);
 
   // Helper to format date to compare with events
   const formatDateForComparison = (date) => {
@@ -153,7 +150,11 @@ const CalendarPage = () => {
       <div className="mb-5 relative">
         <img src={leaf2} alt="" className="absolute -top-6 -left-6 w-12 h-12 opacity-20" />
         <h1 className="text-3xl font-bold text-[var(--color-wood-dark)] mb-2">Calendar</h1>
-        <p className="text-[var(--color-earth)]">Schedule and view shared events</p>
+        <p className="text-[var(--color-earth)]">
+          {activeHousehold 
+            ? `Schedule and view shared events for ${activeHousehold.name}` 
+            : 'Schedule and view shared events'}
+        </p>
       </div>
       
       {error && (
@@ -231,20 +232,31 @@ const CalendarPage = () => {
       </div>
       
       {/* Button to add new event */}
-      <div className="mt-6 flex justify-center">
+      <div className="mt-6 flex flex-col items-center">
         <button
           onClick={() => {
             setSelectedEvent(null);
             setSelectedDate(new Date());
             setIsAddEventModalOpen(true);
           }}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-leaf)]"
+          disabled={!activeHouseholdId}
+          className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white ${
+            activeHouseholdId 
+              ? 'bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)]' 
+              : 'bg-gray-400 cursor-not-allowed'
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-leaf)]`}
         >
           <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
           Add New Event
         </button>
+        
+        {!activeHouseholdId && (
+          <p className="text-sm text-red-500 mt-2">
+            Please select an active household from the dashboard to add events.
+          </p>
+        )}
       </div>
       
       {/* Day Events Modal */}
@@ -253,7 +265,7 @@ const CalendarPage = () => {
         onClose={() => setIsDayModalOpen(false)}
         date={selectedDate}
         events={selectedDate ? getEventsForDate(selectedDate) : []}
-        householdId={householdId}
+        householdId={activeHouseholdId}
       />
       
       {/* Direct Add Event Modal */}
@@ -261,7 +273,7 @@ const CalendarPage = () => {
         isOpen={isAddEventModalOpen}
         onClose={() => setIsAddEventModalOpen(false)}
         event={null}
-        householdId={householdId}
+        householdId={activeHouseholdId}
         selectedDate={selectedDate}
         onEventSaved={() => {
           // No need to refresh events as we're using a real-time listener

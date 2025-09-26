@@ -19,7 +19,7 @@ const AddItemForm = ({ onAddItem }) => {
   };
   
   return (
-    <form onSubmit={handleSubmit} className="flex items-center mt-2 mb-4">
+    <form onSubmit={handleSubmit} className="flex items-center mt-2 mb-4 flex-col sm:flex-row w-full">
       <input
         type="text"
         value={itemText}
@@ -31,6 +31,7 @@ const AddItemForm = ({ onAddItem }) => {
                     focus:border-transparent max-w-full"
         aria-label="Add shopping list item"
       />
+      <div className="flex justify-end w-full sm:w-auto mt-2 sm:mt-0">
       <button
         type="submit"
         className="bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] text-white 
@@ -50,6 +51,7 @@ const AddItemForm = ({ onAddItem }) => {
           />
         </svg>
       </button>
+      </div>
     </form>
   );
 };
