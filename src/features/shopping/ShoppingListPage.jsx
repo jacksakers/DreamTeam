@@ -105,27 +105,25 @@ const ShoppingListPage = () => {
             aria-label="New shopping list name"
             disabled={!activeHouseholdId}
           />
-          <div className='flex justify-end'>
           <button
             type="submit"
-            className="bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] 
-                text-white py-2 px-4 rounded-md transition-colors duration-200 max-w-fit"
-            disabled={!newListName.trim() || !activeHouseholdId}
+            className="bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] text-white 
+                    py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center w-full sm:w-auto"
           >
             <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-5 w-5 mr-1" 
-          viewBox="0 0 20 20" 
-          fill="currentColor"
-        >
-          <path 
-            fillRule="evenodd" 
-            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" 
-            clipRule="evenodd" 
-          />
-        </svg>
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5 mr-2" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" 
+                clipRule="evenodd" 
+              />
+            </svg>
+            Add List
           </button>
-          </div>
         </form>
         {!activeHouseholdId && (
           <p className="text-sm text-red-500 mt-2">

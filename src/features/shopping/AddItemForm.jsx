@@ -26,7 +26,7 @@ const AddItemForm = ({ onAddItem }) => {
         onChange={(e) => setItemText(e.target.value)}
         placeholder="Add an item..."
         className="flex-grow px-3 py-2 border 
-                    rounded-l-md border-[var(--color-sage)] 
+                    rounded-md border-[var(--color-sage)] 
                     focus:outline-none focus:ring-2 focus:ring-[var(--color-leaf)] 
                     focus:border-transparent max-w-full"
         aria-label="Add shopping list item"
@@ -35,12 +35,12 @@ const AddItemForm = ({ onAddItem }) => {
       <button
         type="submit"
         className="bg-[var(--color-leaf)] hover:bg-[var(--color-leaf-dark)] text-white 
-                py-2 px-2 rounded-r-md transition-colors duration-200 flex items-center"
+                py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center w-full sm:w-auto"
         disabled={!itemText.trim()}
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          className="h-5 w-5 mr-1" 
+          className="h-5 w-5 mr-2" 
           viewBox="0 0 20 20" 
           fill="currentColor"
         >
@@ -50,6 +50,7 @@ const AddItemForm = ({ onAddItem }) => {
             clipRule="evenodd" 
           />
         </svg>
+        Add Item
       </button>
       </div>
     </form>
